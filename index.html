@@ -1,0 +1,493 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Hoogeveen - Roleplay</title>
+  <style>
+    body {
+      margin: 0;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background-color: #f5f6f8;
+      height: 100vh;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow: hidden;
+    }
+
+    .fade {
+      opacity: 0;
+      transition: opacity 0.8s ease-in-out;
+    }
+
+    .fade.show {
+      opacity: 1;
+    }
+
+    /* Login container */
+    .login-container {
+      background-color: #ffffff;
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+      width: 320px;
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center;
+    }
+
+    .input-group {
+      display: flex;
+      align-items: center;
+      background: #f3f3f3;
+      border-radius: 8px;
+      padding: 0.5rem;
+      margin-bottom: 1rem;
+      position: relative;
+    }
+
+    .input-group input {
+      border: none;
+      background: transparent;
+      flex: 1;
+      outline: none;
+      font-size: 14px;
+    }
+
+    .input-group span {
+      margin-right: 0.5rem;
+      font-size: 16px;
+      color: #888;
+      user-select: none;
+    }
+
+    .toggle-password {
+      margin-right: 0;
+      margin-left: 0.5rem;
+      font-size: 18px;
+      cursor: pointer;
+      user-select: none;
+      color: #555;
+      position: absolute;
+      right: 10px;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    button {
+      background-color: #0052ea;
+      color: white;
+      border: none;
+      padding: 0.75rem 1.5rem;
+      border-radius: 8px;
+      font-size: 16px;
+      cursor: pointer;
+      width: 100%;
+      user-select: none;
+    }
+
+    button:hover {
+      background-color: #003fc5;
+    }
+
+    .error-message {
+      color: red;
+      font-size: 13px;
+      margin-bottom: 10px;
+      display: none;
+    }
+
+    /* Dashboard container - verhoogde hoogte */
+    .dashboard-container {
+      display: flex;
+      width: 850px;
+      height: 700px; /* Hoger dan eerst */
+      border-radius: 12px;
+      overflow: hidden;
+      background: white;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+    }
+
+    /* Sidebar met dezelfde hoogte als container */
+    .sidebar {
+      background-color: #0052ea;
+      width: 200px;
+      display: flex;
+      flex-direction: column;
+      padding: 1rem 0 2rem;
+      box-sizing: border-box;
+      height: 100%; /* Vul hele hoogte */
+    }
+
+    .sidebar .user-name {
+      color: #fff;
+      font-weight: 700;
+      font-size: 18px;
+      padding: 0 24px 1rem 24px;
+      border-bottom: 1px solid rgba(255,255,255,0.3);
+      margin-bottom: 1rem;
+      user-select: none;
+      flex-shrink: 0;
+    }
+
+    .sidebar button {
+      background: transparent;
+      border: none;
+      color: white;
+      padding: 14px 24px;
+      font-size: 16px;
+      text-align: left;
+      cursor: pointer;
+      transition: background-color 0.3s;
+      user-select: none;
+      flex-shrink: 0;
+      margin-bottom: 10px;
+    }
+
+    .sidebar button:hover {
+      background-color: #003fc5;
+    }
+
+    .sidebar button.active {
+      background-color: #003fc5;
+    }
+
+    /* Hoofd content naast sidebar */
+    .dashboard-main {
+      flex-grow: 1;
+      padding: 2rem;
+      overflow-y: auto;
+      color: #333;
+      font-size: 16px;
+      text-align: left;
+      box-sizing: border-box;
+      white-space: pre-wrap; /* Voor nieuwe regels in extra info */
+    }
+
+    .dashboard-main h1 {
+      margin-top: 0;
+      font-size: 24px;
+      margin-bottom: 1rem;
+    }
+
+    /* Minder ruimte tussen paragrafen en regels in dashboard content */
+    .dashboard-main p {
+      margin: 4px 0;
+      line-height: 1.3;
+    }
+
+    .dashboard-main p + p {
+      margin-top: 6px;
+    }
+
+    /* Uitlijning in account info */
+    .dashboard-main p strong {
+      display: inline-block;
+      min-width: 110px;
+    }
+
+    /* Links styling en compacte blokken */
+    .dashboard-main div {
+      margin-bottom: 6px;
+    }
+
+    .dashboard-main a {
+      color: #0052ea;
+      text-decoration: none;
+    }
+
+    .dashboard-main a:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+<body>
+  <!-- Login -->
+  <div id="login" class="login-container fade show" role="main" aria-label="Login">
+    <h1>Hoogeveen Roleplay</h1>
+    <p>Dashboard</p>
+
+    <form id="loginForm" aria-describedby="errorMessage" novalidate>
+      <div class="error-message" id="errorMessage" role="alert"></div>
+
+      <div class="input-group">
+        <span>👤</span>
+        <input type="text" id="username" placeholder="Gebruikersnaam" autocomplete="username" aria-label="Gebruikersnaam" required />
+      </div>
+
+      <div class="input-group">
+        <span>🔒</span>
+        <input type="password" id="password" placeholder="Wachtwoord" autocomplete="current-password" aria-label="Wachtwoord" required />
+        <span class="toggle-password" id="togglePassword" title="Toon/verberg wachtwoord" role="button" tabindex="0">👁️</span>
+      </div>
+
+      <button type="submit">Login</button>
+    </form>
+  </div>
+
+  <!-- Dashboard -->
+  <div id="dashboard" class="dashboard-container fade" style="display: none;" role="main" aria-label="Dashboard">
+    <nav class="sidebar" role="navigation" aria-label="Hoofd navigatie">
+      <div class="user-name" id="loggedInUser">Gebruiker</div>
+      <button id="btnAccount">Account</button>
+      <button id="btnLinks">Links</button>
+      <button id="btnWarns">Warns</button>
+      <button id="btnKicks">Kicks</button>
+      <button id="btnBans">Bans</button>
+      <button id="btnBanlist">Banlist</button>
+      <button id="btnLogs">Logs</button>
+      <button id="btnAdmins">Admins</button>
+      <button id="btnJoinLeave">Join/Leave</button>
+      <button id="btnChatlogs">Chatlogs</button>
+      <button id="btnLogout">Uitloggen</button>
+    </nav>
+    <main class="dashboard-main" tabindex="0">
+      <h1 id="welcomeMessage">Welkom!</h1>
+      <p>Je bent nu ingelogd 🎉</p>
+    </main>
+  </div>
+
+  <script>
+    // Gebruikerslijst met base64-versleutelde gegevens en extra info
+    const users = [
+      {
+        username: atob("RW1yZQ=="), // 'Emre'
+        password: atob("SGFsbG8="), // 'Hallo'
+        discordRank: "Bestuur",
+        extraInfo: "Leeftijd: 15\nPerms: Game & groep op jouw naam.\nRoblox: Konijnenhoofden\nAlt Roblox: Konijnenhoofden2"
+      },
+      {
+        username: atob("U2VubmU="), // 'Senne'
+        password: atob("TmFvbWk="), // 'Naomi'
+        discordRank: "Bestuur",
+        extraInfo: "Leeftijd: 14\nPerms: Discord op jouw naam.\nRoblox: bengwnwout\nAlt Roblox: Bengwnsenne1"
+      },
+      {
+        username: atob("RXh0cmE="), // 'Extra'
+        password: atob("VGVzdA=="), // 'Test'
+        discordRank: "Niet bekend",
+        extraInfo: "Leeftijd: ...\nExtra: Extra account.\nRoblox: ...\nAlt Roblox: ..."
+      }
+    ];
+
+    const loginForm = document.getElementById("loginForm");
+    const loginBox = document.getElementById("login");
+    const dashboardBox = document.getElementById("dashboard");
+    const errorMessage = document.getElementById("errorMessage");
+    const welcomeMessage = document.getElementById("welcomeMessage");
+    const togglePassword = document.getElementById("togglePassword");
+    const passwordInput = document.getElementById("password");
+
+    const sidebarButtons = document.querySelectorAll(".sidebar button");
+    const dashboardMain = document.querySelector(".dashboard-main");
+    const loggedInUserDiv = document.getElementById("loggedInUser");
+
+    let currentUser = null;
+
+    // Toggle wachtwoord tonen/verbergen
+    togglePassword.addEventListener("click", () => {
+      const type = passwordInput.getAttribute("type") === "password" ? "text" : "password";
+      passwordInput.setAttribute("type", type);
+      togglePassword.textContent = type === "password" ? "👁️" : "🙈";
+    });
+    // Toetsenbord toegankelijkheid togglePassword
+    togglePassword.addEventListener("keydown", e => {
+      if (e.key === "Enter" || e.key === " ") {
+        e.preventDefault();
+        togglePassword.click();
+      }
+    });
+
+    loginForm.addEventListener("submit", function (e) {
+      e.preventDefault();
+
+      const username = document.getElementById("username").value.trim();
+      const password = passwordInput.value.trim();
+
+      if (!username || !password) {
+        errorMessage.textContent = "Vul je gebruikersnaam en wachtwoord in.";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      const matchedUser = users.find(
+        user => user.username === username && user.password === password
+      );
+
+      if (!matchedUser) {
+        errorMessage.textContent = "Ongeldige gebruikersnaam of wachtwoord.";
+        errorMessage.style.display = "block";
+        return;
+      }
+
+      errorMessage.style.display = "none";
+      currentUser = matchedUser;
+
+      loginBox.classList.remove("show");
+      setTimeout(() => {
+        loginBox.style.display = "none";
+        dashboardBox.style.display = "flex";
+        dashboardBox.classList.add("show");
+
+        loggedInUserDiv.textContent = currentUser.username;
+        setDefaultDashboardView(currentUser);
+      }, 800);
+    });
+
+    function setDefaultDashboardView(user) {
+      currentUser = user;
+      const firstButton = document.getElementById("btnAccount");
+      setActiveButton(firstButton);
+      dashboardMain.innerHTML = getAccountContent(user);
+
+      // Voeg eventlistener toe aan wachtwoord wijzigen formulier
+      const changePasswordForm = document.getElementById("changePasswordForm");
+      if (changePasswordForm) {
+        changePasswordForm.addEventListener("submit", e => {
+          e.preventDefault();
+          handleChangePassword();
+        });
+      }
+    }
+
+    // Functie om actieve knop te highlighten
+    function setActiveButton(activeButton) {
+      sidebarButtons.forEach(button => {
+        button.classList.remove("active");
+      });
+      activeButton.classList.add("active");
+    }
+
+    sidebarButtons.forEach(button => {
+      button.addEventListener("click", () => {
+        if (button.id === "btnLogout") {
+          logout();
+          return;
+        }
+        setActiveButton(button);
+
+        if (button.id === "btnAccount") {
+          dashboardMain.innerHTML = getAccountContent(currentUser);
+
+          // Voeg eventlistener toe aan wachtwoord wijzigen formulier
+          const changePasswordForm = document.getElementById("changePasswordForm");
+          if (changePasswordForm) {
+            changePasswordForm.addEventListener("submit", e => {
+              e.preventDefault();
+              handleChangePassword();
+            });
+          }
+        } else {
+          // Andere content-tabbladen (mock content)
+          const contentMap = {
+            btnLinks: "<h1>Links</h1><p>Hier komen belangrijke links.</p>",
+            btnWarns: "<h1>Warns</h1><p>Overzicht van waarschuwingen.</p>",
+            btnKicks: "<h1>Kicks</h1><p>Overzicht van kicks.</p>",
+            btnBans: "<h1>Bans</h1><p>Overzicht van bans.</p>",
+            btnBanlist: "<h1>Banlist</h1><p>Banlijst details.</p>",
+            btnLogs: "<h1>Logs</h1><p>Activiteiten log.</p>",
+            btnAdmins: "<h1>Admins</h1><p>Admin informatie.</p>",
+            btnJoinLeave: "<h1>Join/Leave</h1><p>Gebruikers join/leave events.</p>",
+            btnChatlogs: "<h1>Chatlogs</h1><p>Chat geschiedenis.</p>"
+          };
+
+          dashboardMain.innerHTML = contentMap[button.id] || "<p>Geen inhoud beschikbaar.</p>";
+        }
+      });
+    });
+
+    function logout() {
+      dashboardBox.classList.remove("show");
+      setTimeout(() => {
+        dashboardBox.style.display = "none";
+        loginBox.style.display = "block";
+        loginBox.classList.add("show");
+        currentUser = null;
+
+        // Velden resetten
+        loginForm.reset();
+        errorMessage.style.display = "none";
+        passwordInput.setAttribute("type", "password");
+        togglePassword.textContent = "👁️";
+      }, 500);
+    }
+
+    function getAccountContent(user) {
+      return `
+        <h1>Account</h1>
+        <p><strong>Gebruikersnaam:</strong> ${user.username}</p>
+        <p><strong>Discord Rank:</strong> ${user.discordRank}</p>
+        <p><strong>Extra informatie:</strong><br>${user.extraInfo.replace(/\n/g, '<br>')}</p>
+        <hr>
+        <h2>Wachtwoord wijzigen</h2>
+        <form id="changePasswordForm" novalidate>
+          <div class="input-group">
+            <span>🔒</span>
+            <input type="password" id="currentPassword" placeholder="Huidig wachtwoord" required autocomplete="current-password" />
+          </div>
+          <div class="input-group">
+            <span>🔒</span>
+            <input type="password" id="newPassword" placeholder="Nieuw wachtwoord" required autocomplete="new-password" />
+          </div>
+          <div class="input-group">
+            <span>🔒</span>
+            <input type="password" id="confirmNewPassword" placeholder="Bevestig nieuw wachtwoord" required autocomplete="new-password" />
+          </div>
+          <button type="submit">Wijzig wachtwoord</button>
+          <p id="changePasswordMessage" style="color: green; margin-top: 8px; display: none;" role="alert"></p>
+        </form>
+      `;
+    }
+
+    function handleChangePassword() {
+      const currentPasswordInput = document.getElementById("currentPassword");
+      const newPasswordInput = document.getElementById("newPassword");
+      const confirmNewPasswordInput = document.getElementById("confirmNewPassword");
+      const messageEl = document.getElementById("changePasswordMessage");
+
+      const currentPassword = currentPasswordInput.value.trim();
+      const newPassword = newPasswordInput.value.trim();
+      const confirmNewPassword = confirmNewPasswordInput.value.trim();
+
+      if (currentPassword !== currentUser.password) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Huidig wachtwoord is onjuist.";
+        messageEl.style.display = "block";
+        return;
+      }
+
+      if (newPassword.length < 3) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Nieuw wachtwoord is te kort (minimaal 3 tekens).";
+        messageEl.style.display = "block";
+        return;
+      }
+
+      if (newPassword !== confirmNewPassword) {
+        messageEl.style.color = "red";
+        messageEl.textContent = "Nieuw wachtwoord en bevestiging komen niet overeen.";
+        messageEl.style.display = "block";
+        return;
+      }
+
+      currentUser.password = newPassword;
+
+      // Velden leegmaken
+      currentPasswordInput.value = "";
+      newPasswordInput.value = "";
+      confirmNewPasswordInput.value = "";
+
+      messageEl.style.color = "green";
+      messageEl.textContent = "Wachtwoord succesvol gewijzigd!";
+      messageEl.style.display = "block";
+    }
+  </script>
+</body>
+</html>
